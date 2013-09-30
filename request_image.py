@@ -51,8 +51,3 @@ def search_by_image(image):
     '''
 
     return redirect_url
-
-#    return urllib.urlopen(redirect_url).read()
-
-image = open(sys.argv[1], 'r').read()
-print search_by_image(image)
