@@ -28,7 +28,7 @@ def upload_image_custom(image):
     conn.request('POST', '/upload', 'trololo')
     filename = conn.getresponse().read()
     conn.close()
-    return 'https://%s:54321%s' % (address, filename)
+    return 'http://%s:54322%s' % (address, filename)
 
 def search_by_image(image):
     url = upload_image_custom(image)
