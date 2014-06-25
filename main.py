@@ -1,7 +1,9 @@
+#/usr/bin/env python
+
 import webbrowser
 
 import kivy
-kivy.require('1.7.2') # replace with your current kivy version !
+kivy.require('1.8.0') # replace with your current kivy version !
 
 from kivy.app import App
 from kivy.uix.widget import Widget
@@ -21,10 +23,7 @@ class MyApp(App):
     def on_image(self, *args):
         if not self.camera.texture:
             return
-        img = PilImage.frombuffer('RGBA', self.camera.texture.size, self.camera.texture.pixels, 'raw', 'RGBA', 0, 1)
-        data = StringIO()
-        img.save(data, 'jpeg')
-        url = search_by_image(data.getvalue())
+        url = search_by_image(self.camera.get_picture())
         webbrowser.open(url)
 #        f = open('3.png', 'w')
 #        f.write(data.getvalue())

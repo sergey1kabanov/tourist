@@ -9,6 +9,9 @@ from kivy.graphics import RenderContext, Callback, BindTexture
 from kivy.graphics.texture import Texture
 from kivy.core.window import Window
 from kivy.logger import Logger
+
+from PIL import Image as PilImage
+from StringIO import StringIO
 import sys
 
 GL_TEXTURE_EXTERNAL_OES = 36197
@@ -198,8 +201,27 @@ class AndroidCameraPreview(Image):
     def _update_canvas(self, dt):
         self.canvas.ask_update()
 
+
 if IsAndroid:
-    TouristCamera = AndroidCameraPreview
+    TouristCameraBase = AndroidCameraPreview
 else:
     from kivy.uix.camera import Camera as GeneralCamera
-    TouristCamera = GeneralCamera
+    TouristCameraBase = GeneralCamera
+
+class TouristCamera(TouristCameraBase):
+    def __init__(self, **kwargs):
+        super(TouristCamera, self).__init__(**kwargs)
+
+    def get_picture(self):
+        if IsAndroid:
+            texture = self._secondary_texture
+        else:
+            texture = self.texture
+
+        if not texture:
+            return
+
+        img = PilImage.frombuffer('RGBA', texture.size, texture.pixels, 'raw', 'RGBA', 0, 1)
+        data = StringIO()
+        img.save(data, 'jpeg')
+        return data.getvalue()
