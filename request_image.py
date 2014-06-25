@@ -23,15 +23,16 @@ def upload_image_yandex(image):
         raise Exception('Bad response from api-fotki.yandex.ru: %s' % data)
 
 def upload_image_custom(image):
-    address = '127.0.0.1'
+    address = 'arma-granit.ru'
     conn = httplib.HTTPSConnection(address, 54321, './file_server/cert/client/client.key', './file_server/cert/client/client.pem')
     conn.request('POST', '/upload', 'trololo')
     filename = conn.getresponse().read()
     conn.close()
-    return 'https://%s:54321/%s' % (address, filename)
+    return 'https://%s:54321%s' % (address, filename)
 
 def search_by_image(image):
     url = upload_image_custom(image)
+    print url
     conn = httplib.HTTPConnection('images.google.com')
     conn.request('GET', '/searchbyimage?image_url=%s' % url)
     response = conn.getresponse()

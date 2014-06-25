@@ -65,6 +65,11 @@ class ExecutionHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         except Exception as error:
             self.send_error(400)
 
+
+class ExecutionHandlerRo(ExecutionHandler):
+    def do_POST(self):
+        self.send_error(404)
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
 
@@ -80,6 +85,16 @@ if __name__ == '__main__':
                                    server_side=True,
                                    cert_reqs=ssl.CERT_REQUIRED,
                                    ca_certs=conf['auth_cert'])
+
+    t = threading.Thread(target = httpd.serve_forever)
+    t.daemon = True
+    t.start()
+
+    httpd_ro = server_class(('', int(conf['port_ro'])), ExecutionHandlerRo)
+    t = threading.Thread(target = httpd_ro.serve_forever)
+    t.daemon = True
+    t.start()
+
     logging.info('Server Starts - %s:%s' % ('', conf['port']))
     try:
         httpd.serve_forever()
