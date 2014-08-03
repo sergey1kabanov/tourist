@@ -24,6 +24,8 @@ TEXT_FORMAT.setForeground(QtGui.QBrush(WHITE))
 class ChatWidget(QtGui.QTextEdit):
     def __init__(self, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
+        self.setWindowTitle("CHAT")
+        self.resize(400, 500)
         self.setReadOnly(True)
         palette = self.palette()
         palette.setColor(QtGui.QPalette.Base, DARK_BLUE)
@@ -40,7 +42,8 @@ class ChatWidget(QtGui.QTextEdit):
     def print_message(self, message):
         self.cursor.insertText(self.adjust_login_size(message.login), LOGIN_FORMAT)
         self.print_message_text(message.text, message.chat)
-        #self.cursor.insertText(message.text + '\n', TEXT_FORMAT)
+        self.moveCursor(QtGui.QTextCursor.End)
+        self.verticalScrollBar().maximum()
 
     def print_message_text(self, text, chat):
         current_idx = 0
@@ -66,22 +69,19 @@ class ChatWidget(QtGui.QTextEdit):
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
-    w = QtGui.QWidget()
-    w.resize(250, 150)
-    w.move(300, 300)
-    w.setWindowTitle('Simple')
 
-    text_edit = ChatWidget(w)
+    text_edit = ChatWidget()
 
     text_edit.print_message(Message('ComixZone3', 'Hello!', 'goodgame'))
 
     text_edit.print_message(Message('mess', 'Hello!', 'goodgame'))
 
+
     text_edit.print_message(Message('messalina123', 'Hello!', 'goodgame'))
 
     text_edit.print_message(Message('messalina123', 't :peka123peka:peka:', 'goodgame'))
 
-    w.show()
+    text_edit.show()
 
     sys.exit(app.exec_())
 
