@@ -15,6 +15,7 @@ import sys
 from PyQt4 import QtGui
 
 from gui import ChatWidget
+from message import Message
 
 LOGIN_LENGTH = 15
 
@@ -23,13 +24,6 @@ def login_string(login):
         return login[:LOGIN_LENGTH]
     else:
         return login
-
-
-class Message:
-    def __init__(self, login, text, chat):
-        self.login = login
-        self.text = text
-        self.chat = chat
 
 
 def on_message(ws, message):
