@@ -25,7 +25,7 @@ class Icon:
         return str({'background': self.bg, 'background-position': self.bg_position, 'width': self.width, 'height': self.height})
 
 
-def updateIconByType(i, types, css):
+def update_icon_by_type(i, types, css):
     itype = '.'.join(types)
     for r in css.rules:
         if '#chat #content %s' % itype == r.selector.as_css():
@@ -46,14 +46,23 @@ def updateIconByType(i, types, css):
                     i.height = int(mo.group(1))
 
 
+def has_type(itype, css):
+    for r in css.rules:
+        if '#chat #content %s' % itype == r.selector.as_css():
+            return True
+    return False
+
+
 def get_icon(itemType, css):
+    if not has_type(itemType, css):
+        raise Exception('No smile')
     i = Icon()
     types = itemType.split('.')
     checked_types = []
     for idx in xrange(0, len(types)):
         checked_types.append(types[idx])
-        updateIconByType(i, checked_types, css)
-    return i 
+        update_icon_by_type(i, checked_types, css)
+    return i
 
 
 def create_sub_image(image, rect):
