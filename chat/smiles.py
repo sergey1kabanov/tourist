@@ -47,11 +47,8 @@ def update_icon_by_type(i, types, css):
 
 
 def has_type(itype, css):
-    return True
-    print ('#chat #content %s' % itype).replace(' ', '')
     for r in css.rules:
-        print r.selector.as_css().replace(' ', '')
-        if ('#chat #content %s' % itype).replace(' ', '') == r.selector.as_css().replace(' ', ''):
+        if ('#chat #content img.smiles.%s' % itype) == r.selector.as_css():
             return True
     return False
 
@@ -60,6 +57,7 @@ def get_icon(itemType, css):
     if not has_type(itemType, css):
         raise Exception('No smile')
     i = Icon()
+    itemType = '.big .smiles.%s' % itemType
     types = itemType.split('.')
     checked_types = []
     for idx in xrange(0, len(types)):
@@ -92,7 +90,7 @@ class SmileStorage:
     def get_smile(self, smile_code):
         smile = self.smiles.get(smile_code, None)
         if not smile:
-            smile_info = get_icon('.big .smiles.%s' % smile_code[1:-1], self.css)
+            smile_info = get_icon('%s' % smile_code[1:-1], self.css)
             smiles_img = self.imgs.get(smile_info.bg, None)
             if not smiles_img:
                 conn = httplib.HTTPConnection('goodgame.ru')
@@ -102,7 +100,6 @@ class SmileStorage:
                 smiles_img.loadFromData(response.read())
                 self.imgs[smile_info.bg] = smiles_img
             
-            print smile_info
             smile = create_sub_image(smiles_img, QtCore.QRect(smile_info.bg_position.x, smile_info.bg_position.y, 
                                                              smile_info.width, smile_info.height))
             self.smiles[smile_code] = smile
