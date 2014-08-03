@@ -37,7 +37,7 @@ def update_icon_by_type(i, types, css):
                     i.bg = mo.group(1)
                 elif name == 'background-position':
                     mo = re.match(r'(-?[0-9]+)p?x? (-?[0-9]+)p?x?', value)
-                    i.bg_position = BackgroundPosition(int(mo.group(1)), int(mo.group(2)))
+                    i.bg_position = BackgroundPosition(int(mo.group(1)), -int(mo.group(2)))
                 elif name == 'width':
                     mo = re.match(r'(-?[0-9]+)p?x?', value)
                     i.width = int(mo.group(1))
@@ -66,9 +66,13 @@ def get_icon(itemType, css):
 
 
 def create_sub_image(image, rect):
+    '''
+    print rect.x(), rect.y()
     offset = rect.x() * image.depth() / 8 + rect.y() * image.bytesPerLine()
     return QtGui.QImage(image.scanLine(offset), rect.width(), rect.height(),
                   image.bytesPerLine(), image.format())
+    '''
+    return image.copy(rect)
 
 class SmileStorage:
     def __init__(self):
