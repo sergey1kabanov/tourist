@@ -17,7 +17,7 @@ class BackgroundPosition:
 class Icon:
     def __init__(self):
         self.bg = None
-        self.bg_position = None
+        self.bg_position = BackgroundPosition(0, 0)
         self.width = None
         self.height = None
 
@@ -26,9 +26,9 @@ class Icon:
 
 
 def update_icon_by_type(i, types, css):
-    itype = '.'.join(types)
+    itype = '.'.join(types).replace(' ', '')
     for r in css.rules:
-        if '#chat #content %s' % itype == r.selector.as_css():
+        if '#chat#content%s' % itype == r.selector.as_css().replace(' ', ''):
             for d in r.declarations:
                 name = d.name
                 value = d.value.as_css()
@@ -47,8 +47,11 @@ def update_icon_by_type(i, types, css):
 
 
 def has_type(itype, css):
+    return True
+    print ('#chat #content %s' % itype).replace(' ', '')
     for r in css.rules:
-        if '#chat #content %s' % itype == r.selector.as_css():
+        print r.selector.as_css().replace(' ', '')
+        if ('#chat #content %s' % itype).replace(' ', '') == r.selector.as_css().replace(' ', ''):
             return True
     return False
 
@@ -89,7 +92,7 @@ class SmileStorage:
     def get_smile(self, smile_code):
         smile = self.smiles.get(smile_code, None)
         if not smile:
-            smile_info = get_icon('img.smiles.%s' % smile_code[1:-1], self.css)
+            smile_info = get_icon('.big .smiles.%s' % smile_code[1:-1], self.css)
             smiles_img = self.imgs.get(smile_info.bg, None)
             if not smiles_img:
                 conn = httplib.HTTPConnection('goodgame.ru')
@@ -99,6 +102,7 @@ class SmileStorage:
                 smiles_img.loadFromData(response.read())
                 self.imgs[smile_info.bg] = smiles_img
             
+            print smile_info
             smile = create_sub_image(smiles_img, QtCore.QRect(smile_info.bg_position.x, smile_info.bg_position.y, 
                                                              smile_info.width, smile_info.height))
             self.smiles[smile_code] = smile
