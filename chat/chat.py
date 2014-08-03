@@ -76,7 +76,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format=log_format)
     app = QtGui.QApplication(sys.argv)
     w = QtGui.QTextEdit()
-    ws = websocket.WebSocketApp("ws://goodgame.ru:8080/chat/websocket",
+    ws = websocket.WebSocketApp('ws://goodgame.ru:8080/chat/websocket',
                               on_message = on_message,
                               on_error = on_error,
                               on_close = on_close)
