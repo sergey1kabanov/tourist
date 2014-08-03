@@ -24,6 +24,7 @@ TEXT_FORMAT.setForeground(QtGui.QBrush(WHITE))
 class ChatWidget(QtGui.QTextEdit):
     def __init__(self, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
+        self.setReadOnly(True)
         palette = self.palette()
         palette.setColor(QtGui.QPalette.Base, DARK_BLUE)
         self.setPalette(palette)
