@@ -14,6 +14,8 @@ import threading
 import sys
 from PyQt4 import QtGui
 
+from gui import ChatWidget
+
 LOGIN_LENGTH = 15
 
 def login_string(login):
@@ -21,6 +23,13 @@ def login_string(login):
         return login[:LOGIN_LENGTH]
     else:
         return login
+
+
+class Message:
+    def __init__(self, login, text, chat):
+        self.login = login
+        self.text = text
+        self.chat = chat
 
 
 def on_message(ws, message):
@@ -48,15 +57,11 @@ def on_message(ws, message):
             'hidden': '',
             'mobile': False
         }})
-        #print join_answer
-        print j
         ws.send(join_answer)
     elif mtype == 'message':
-        #print j
         data = j['data']
         print data
-        w.append('<span style="font-size:8pt; font-weight:600; color:#0000aa;">%s:</span>: %s'\
-                                         % (login_string(data['user_name']), data['text']))
+        w.print_message(Message(data['user_name'], data['text'], 'goodgame'))
     #else:
     #    print j
 
@@ -75,7 +80,7 @@ if __name__ == '__main__':
     log_format = '%(asctime)s %(message)s'
     logging.basicConfig(level=logging.DEBUG, format=log_format)
     app = QtGui.QApplication(sys.argv)
-    w = QtGui.QTextEdit()
+    w = QtGui.ChatWidget()
     ws = websocket.WebSocketApp('ws://goodgame.ru:8080/chat/websocket',
                               on_message = on_message,
                               on_error = on_error,
