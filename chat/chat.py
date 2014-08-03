@@ -42,7 +42,6 @@ def on_message(ws, message):
                }
 
         answer = json.dumps(auth)
-        print j
         ws.send(answer)
     elif mtype == 'success_auth':
         #print j
@@ -56,8 +55,8 @@ def on_message(ws, message):
         data = j['data']
         print data
         w.print_message(Message(data['user_name'], data['text'], 'goodgame'))
-    #else:
-    #    print j
+    else:
+        print j
 
 def on_error(ws, error):
     print 'Error occurred: %s' % repr(error)
@@ -74,7 +73,7 @@ if __name__ == '__main__':
     log_format = '%(asctime)s %(message)s'
     logging.basicConfig(level=logging.DEBUG, format=log_format)
     app = QtGui.QApplication(sys.argv)
-    w = QtGui.ChatWidget()
+    w = ChatWidget()
     ws = websocket.WebSocketApp('ws://goodgame.ru:8080/chat/websocket',
                               on_message = on_message,
                               on_error = on_error,
