@@ -46,7 +46,9 @@ def on_message(ws, message):
     elif mtype == 'success_auth':
         #print j
         join_answer = json.dumps({'type': 'join', 'data': {
-            'channel_id': 1999,#1717 Vicarion, #2059 Happa_,
+            #'channel_id': 1999, #My
+            #'channel_id': 1717, #Vicarion
+            'channel_id': 2059, #Happa_
             'hidden': '',
             'mobile': False
         }})
@@ -83,10 +85,6 @@ if __name__ == '__main__':
     t = threading.Thread(target=run_app, args=[ws])
     t.setDaemon(True)
     t.start()
-    
-    w.resize(250, 150)
-    w.move(300, 300)
-    w.setWindowTitle('Simple')
-    w.show()
 
+    w.show()
     sys.exit(app.exec_())
