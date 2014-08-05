@@ -22,8 +22,11 @@ TEXT_FORMAT.setFont(QtGui.QFont('Arial', 11))
 TEXT_FORMAT.setForeground(QtGui.QBrush(WHITE))
 
 class ChatWidget(QtGui.QTextEdit):
+    on_print = QtCore.pyqtSignal(list)
+
     def __init__(self, parent=None):
         QtGui.QTextEdit.__init__(self, parent)
+        self.on_print.connect(self.do_print)
         self.setWindowTitle("CHAT")
         self.resize(400, 500)
         self.setReadOnly(True)
@@ -40,6 +43,10 @@ class ChatWidget(QtGui.QTextEdit):
         return login + ' '
 
     def print_message(self, message):
+        self.on_print.emit([message])
+
+    def do_print(self, message):
+        message = message[0]
         self.cursor.insertText(self.adjust_login_size(message.login), LOGIN_FORMAT)
         self.print_message_text(message.text, message.chat)
         self.moveCursor(QtGui.QTextCursor.End)
