@@ -12,6 +12,7 @@ import json
 import ast
 import threading
 import sys
+import json
 from PyQt4 import QtGui
 
 from gui import ChatWidget
@@ -24,6 +25,7 @@ def login_string(login):
         return login[:LOGIN_LENGTH]
     else:
         return login
+
 
 
 def on_message(ws, message):
@@ -48,7 +50,7 @@ def on_message(ws, message):
         join_answer = json.dumps({'type': 'join', 'data': {
             #'channel_id': 1999, #My
             #'channel_id': 1717, #Vicarion
-            'channel_id': 2059, #Happa_
+            'channel_id': ws.settings['channel_id'], #Happa_
             'hidden': '',
             'mobile': False
         }})
@@ -56,7 +58,7 @@ def on_message(ws, message):
     elif mtype == 'message':
         data = j['data']
         print data
-        w.print_message(Message(data['user_name'], data['text'], 'goodgame'))
+        ws.window.print_message(Message(data['user_name'], data['text'], 'goodgame'))
     else:
         print j
 
@@ -71,20 +73,35 @@ def run_app(ws):
     while True:
         ws.run_forever()
 
-if __name__ == '__main__':
-    log_format = '%(asctime)s %(message)s'
-    logging.basicConfig(level=logging.DEBUG, format=log_format)
-    app = QtGui.QApplication(sys.argv)
-    w = ChatWidget()
-    ws = websocket.WebSocketApp('ws://goodgame.ru:8080/chat/websocket',
+
+class GoodgameChat(websocket.WebSocketApp):
+    def __init__(self, settings):
+        self.settings = settings
+        websocket.WebSocketApp.__init__(self, 'ws://goodgame.ru:8080/chat/websocket',
                               on_message = on_message,
                               on_error = on_error,
                               on_close = on_close)
-    #ws.enableTrace(True)
-    ws.window = w
-    t = threading.Thread(target=run_app, args=[ws])
-    t.setDaemon(True)
-    t.start()
+        self.window = ChatWidget(settings)
+        self.window.show()
+    
+    def start(self):
+        t = threading.Thread(target=run_app, args=[self])
+        t.setDaemon(True)
+        t.start()
 
-    w.show()
+
+if __name__ == '__main__':
+    log_format = '%(asctime)s %(message)s'
+    logging.basicConfig(level=logging.DEBUG, format=log_format)
+    try:
+        with open('conf.json', 'r') as f:
+            settings = json.load(f)
+    except:
+        settings = {'channel_id': 2059, 'login': 'Happa_'}        
+
+    app = QtGui.QApplication(sys.argv)
+    w = ChatWidget(settings)
+    chat = GoodgameChat(settings)
+    chat.start()
+    
     sys.exit(app.exec_())

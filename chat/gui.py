@@ -12,6 +12,7 @@ MAX_LOGIN_SIZE = 12
 DARK_BLUE = QtGui.QColor(24, 24, 39)
 LIGHT_BLUE = QtGui.QColor(115, 173, 255)
 WHITE = QtGui.QColor(174, 193, 209)
+YELLOW = QtGui.QColor(174, 174, 0) 
 
 LOGIN_FORMAT = QtGui.QTextCharFormat()
 LOGIN_FORMAT.setFont(QtGui.QFont('Courier', 11))
@@ -21,10 +22,15 @@ TEXT_FORMAT = QtGui.QTextCharFormat()
 TEXT_FORMAT.setFont(QtGui.QFont('Arial', 11))
 TEXT_FORMAT.setForeground(QtGui.QBrush(WHITE))
 
+TEXT_FORME_FORMAT = QtGui.QTextCharFormat()
+TEXT_FORME_FORMAT.setFont(QtGui.QFont('Arial', 11))
+TEXT_FORME_FORMAT.setForeground(QtGui.QBrush(YELLOW))
+
 class ChatWidget(QtGui.QTextEdit):
     on_print = QtCore.pyqtSignal(list)
 
-    def __init__(self, parent=None):
+    def __init__(self, settings, parent=None):
+        self.settings = settings
         QtGui.QTextEdit.__init__(self, parent)
         self.on_print.connect(self.do_print)
         self.setWindowTitle("CHAT")
@@ -54,30 +60,35 @@ class ChatWidget(QtGui.QTextEdit):
 
     def print_message_text(self, text, chat):
         current_idx = 0
+        
+        if text.startswith('%s,' % self.settings['login']):
+            text_format = TEXT_FORME_FORMAT
+        else:
+            text_format = TEXT_FORMAT
 
         while True:
 
             mo = re.search(r':([a-z,A-Z,0-9]+):', text[current_idx:])
 
             if mo == None:
-                self.cursor.insertText(text[current_idx:] + '\n', TEXT_FORMAT)
+                self.cursor.insertText(text[current_idx:] + '\n', text_format)
                 return
 
             code = mo.groups(1)[0]
 
             try:
                 image = get_image(':' + code + ':', chat)
-                self.cursor.insertText(text[current_idx:mo.start()], TEXT_FORMAT)
+                self.cursor.insertText(text[current_idx:mo.start()], text_format)
                 self.cursor.insertImage(image)
                 current_idx =  current_idx + mo.end()
             except Exception as e:
-                self.cursor.insertText(text[current_idx:(mo.end() - 1)], TEXT_FORMAT)
+                self.cursor.insertText(text[current_idx:(mo.end() - 1)], text_format)
                 current_idx = current_idx + (mo.end() - 1)
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
 
-    text_edit = ChatWidget()
+    text_edit = ChatWidget({'login': 'Happa_'})
 
     text_edit.print_message(Message('ComixZone3', 'Hello!', 'goodgame'))
 
