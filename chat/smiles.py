@@ -33,8 +33,13 @@ def update_icon_by_type(i, types, css):
                 name = d.name
                 value = d.value.as_css()
                 if name == 'background':
-                    mo = re.match(r'url\("?(.*)"?\)', value)
-                    i.bg = mo.group(1)
+                    mo = re.match(r'url\("?(.*)"?\) no-repeat (-?[0-9]+)p?x? (-?[0-9]+)p?x?', value)
+                    if mo:
+                        i.bg = mo.group(1)
+                        i.bg_position = BackgroundPosition(int(mo.group(2)), -int(mo.group(3)))
+                    else:
+                        mo = re.match(r'url\("?(.*)"?\)', value)
+                        i.bg = mo.group(1)
                 elif name == 'background-position':
                     mo = re.match(r'(-?[0-9]+)p?x? (-?[0-9]+)p?x?', value)
                     i.bg_position = BackgroundPosition(int(mo.group(1)), -int(mo.group(2)))
