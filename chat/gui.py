@@ -1,4 +1,4 @@
-# -*- coding: utf-8
+# -*- coding: utf-8 -*-
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
@@ -6,6 +6,7 @@ from message import Message
 from smiles import get_image
 import re
 import sys
+import json
 
 MAX_LOGIN_SIZE = 12
 
@@ -61,24 +62,29 @@ class ChatWidget(QtGui.QTextEdit):
     def print_message_text(self, text, chat):
         current_idx = 0
         
+        if chat == 'sc2tv':
+            text = re.sub(r'\[b\]([a-z,A-Z,0-9,_,-]+)\[/b\],', lambda mo: '%s,' % mo.group(1), text, count=1)
+
         text_format = TEXT_FORMAT
-        if chat == 'goodgame' and text.startswith('%s,' % self.settings['gg_login']):
+        if text.startswith('%s,' % self.settings[chat]['login']):
             text_format = TEXT_FORME_FORMAT
-        elif chat == 'sc2tv':
-            forme_start = '[b]%s[/b],' % self.settings['sc2tv_login']
-            if text.startswith(forme_start):
-                text = text.replace(forme_start, '%s,' % self.settings['sc2tv_login'], 1)
-                text_format = TEXT_FORME_FORMAT
+        else:
+            text_format = TEXT_FORMAT
 
         while True:
 
-            mo = re.search(r':([a-z,A-Z,0-9]+):', text[current_idx:])
+            if chat == 'goodgame':
+                regex = r':([a-z,A-Z,0-9]+):'
+            elif chat == 'sc2tv':
+                regex = r':s:([a-z,A-Z,0-9]+):'
+
+            mo = re.search(regex, text[current_idx:])
 
             if mo == None:
                 self.cursor.insertText(text[current_idx:] + '\n', text_format)
                 return
 
-            code = mo.groups(1)[0]
+            code = mo.group(1)
 
             try:
                 image = get_image(':' + code + ':', chat)
@@ -92,8 +98,10 @@ class ChatWidget(QtGui.QTextEdit):
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
 
-    text_edit = ChatWidget({'login': 'Happa_'})
-
+    with open('settings.json') as f:
+        settings = json.load(f)
+    text_edit = ChatWidget(settings)
+    '''
     text_edit.print_message(Message('ComixZone3', 'Hello!', 'goodgame'))
 
     text_edit.print_message(Message('mess', 'Hello!', 'goodgame'))
@@ -102,7 +110,8 @@ if __name__ == '__main__':
     text_edit.print_message(Message('messalina123', 'Hello!', 'goodgame'))
 
     text_edit.print_message(Message('messalina123', 't :peka123peka:peka:', 'goodgame'))
-
+    '''
+    text_edit.print_message(Message('aids', u'\u0427\u0435\u0440\u0435\u043f\u0430\u0448\u043a\u0438 \u043d\u0438\u043d\u0434\u0437\u044f \u043b\u0443\u0447\u0448\u0435 \u0425\u0421 :s:lucky:', 'sc2tv'))
     text_edit.show()
 
     sys.exit(app.exec_())

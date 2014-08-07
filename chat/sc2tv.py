@@ -17,7 +17,6 @@ class SC2TVChat:
     def __init__(self, settings, chat_widget):
         self.settings = settings
         self.url = 'chat.sc2tv.ru'
-        self.channelId = 160487
         self.chat_widget = chat_widget
 
     def run(self):
@@ -25,7 +24,7 @@ class SC2TVChat:
         while True:
             try:
                 conn = httplib.HTTPConnection(self.url)
-                conn.request('GET', '/memfs/channel-%s.json' % self.channelId)
+                conn.request('GET', '/memfs/channel-%s.json' % self.settings['channel_id'])
                 response = conn.getresponse()
                 data = response.read()
                 if not data:

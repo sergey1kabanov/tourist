@@ -39,8 +39,8 @@ class SC2TVSmiles:
             conn.request('GET', self.get_url(code))
             data = conn.getresponse().read()
             image = QtGui.QImage()
-            image.loadFromData(response.read())
-            self.smiles[code] = image
+            image.loadFromData(data)
+            self.images[code] = image
 
         return image
 
@@ -180,5 +180,5 @@ if __name__ == '__main__':
 
     sys.exit(app.exec_())
     '''
-    print SC2TVSmiles().get_url(':peka:')
+    print SC2TVSmiles().get_smile(':peka:')
     
