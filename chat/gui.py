@@ -61,10 +61,14 @@ class ChatWidget(QtGui.QTextEdit):
     def print_message_text(self, text, chat):
         current_idx = 0
         
-        if text.startswith('%s,' % self.settings['login']):
+        text_format = TEXT_FORMAT
+        if chat == 'goodgame' and text.startswith('%s,' % self.settings['gg_login']):
             text_format = TEXT_FORME_FORMAT
-        else:
-            text_format = TEXT_FORMAT
+        elif chat == 'sc2tv':
+            forme_start = '[b]%s[/b],' % self.settings['sc2tv_login']
+            if text.startswith(forme_start):
+                text = text.replace(forme_start, '%s,' % self.settings['sc2tv_login'], 1)
+                text_format = TEXT_FORME_FORMAT
 
         while True:
 
