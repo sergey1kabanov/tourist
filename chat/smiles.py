@@ -2,9 +2,48 @@ import tinycss
 import re
 import sys
 import httplib
+import json
 
 from PyQt4 import QtGui, QtCore
 from StringIO import StringIO
+
+
+class SC2TVSmiles:
+    CHAT_IMG_DIR = '/img/'
+
+    def __init__(self):
+        conn = httplib.HTTPConnection('chat.sc2tv.ru')
+        conn.request('GET', '/js/smiles.js')
+        response = conn.getresponse()
+        data = response.read()
+        idx_start = data.find('[')
+        smiles = json.JSONDecoder().raw_decode(data[idx_start:])[0]
+        self.smiles = {}
+        for s in smiles:
+            self.smiles[s['code']] = s
+        self.images = {}
+
+    def get_url(self, code):
+        smile = self.smiles[code]
+        return self.CHAT_IMG_DIR + smile['img']
+        #'" width="' + smile['width'] +\
+        #'" height="' + smile['height'] +\
+        #'" class="chat-smile"/>'
+
+    def get_smile(self, code):
+        if not code in self.smiles:
+            raise Exception('Smile %s not found' % code)
+        image = self.images.get(code, None)
+        if not image:
+            conn = httplib.HTTPConnection('chat.sc2tv.ru')
+            conn.request('GET', self.get_url(code))
+            data = conn.getresponse().read()
+            image = QtGui.QImage()
+            image.loadFromData(response.read())
+            self.smiles[code] = image
+
+        return image
+
 
 class BackgroundPosition:
     def __init__(self, x, y):
@@ -111,15 +150,19 @@ class SmileStorage:
         return smile
 
 goodgame_smiles = SmileStorage()
+sc2tv_smiles = SC2TVSmiles()
 
 def get_image(smile_code, chat):
     if chat == 'goodgame':
         return goodgame_smiles.get_smile(smile_code)
+    elif chat == 'sc2tv':
+        return sc2tv_smiles.get_smile(smile_code)
     else:
         raise Exception('Chat %s not supported' % chat)
 
 
 if __name__ == '__main__':
+    '''
     app = QtGui.QApplication(sys.argv)
     w = QtGui.QWidget()
     w.resize(250, 150)
@@ -136,4 +179,6 @@ if __name__ == '__main__':
     w.show()
 
     sys.exit(app.exec_())
-
+    '''
+    print SC2TVSmiles().get_url(':peka:')
+    
