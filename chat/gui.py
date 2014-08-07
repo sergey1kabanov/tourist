@@ -13,7 +13,7 @@ MAX_LOGIN_SIZE = 12
 DARK_BLUE = QtGui.QColor(24, 24, 39)
 LIGHT_BLUE = QtGui.QColor(115, 173, 255)
 WHITE = QtGui.QColor(174, 193, 209)
-YELLOW = QtGui.QColor(174, 174, 0) 
+YELLOW = QtGui.QColor(0xf1, 0xbd, 0x13) 
 
 LOGIN_FORMAT = QtGui.QTextCharFormat()
 LOGIN_FORMAT.setFont(QtGui.QFont('Courier', 11))
@@ -63,7 +63,7 @@ class ChatWidget(QtGui.QTextEdit):
         current_idx = 0
         
         if chat == 'sc2tv':
-            text = re.sub(r'\[b\]([a-z,A-Z,0-9,_,-]+)\[/b\],', lambda mo: '%s,' % mo.group(1), text, count=1)
+            text = re.sub(r'\[b\]([a-z,A-Z,0-9,_,-,.]+)\[/b\],', lambda mo: '%s,' % mo.group(1), text, count=1)
 
         text_format = TEXT_FORMAT
         if text.startswith('%s,' % self.settings[chat]['login']):
