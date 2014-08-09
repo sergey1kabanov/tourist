@@ -63,7 +63,7 @@ class ChatWidget(QtGui.QTextEdit):
         current_idx = 0
         
         if chat == 'sc2tv':
-            text = re.sub(r'\[b\]([a-z,A-Z,0-9,_,-,.]+)\[/b\],', lambda mo: '%s,' % mo.group(1), text, count=1)
+            text = re.sub(u'\[b\]([а-я,А-Я,ё,Ё,a-z,A-Z,0-9,_,-,.,\s]+)\[/b\],', lambda mo: '%s,' % mo.group(1), text, count=1)
 
         text_format = TEXT_FORMAT
         if text.startswith('%s,' % self.settings[chat]['login']):
@@ -72,13 +72,16 @@ class ChatWidget(QtGui.QTextEdit):
             text_format = TEXT_FORMAT
 
         while True:
-
+            
+            regex = None
+            mo = None
             if chat == 'goodgame':
                 regex = r':([a-z,A-Z,0-9]+):'
             elif chat == 'sc2tv':
                 regex = r':s:([a-z,A-Z,0-9]+):'
 
-            mo = re.search(regex, text[current_idx:])
+            if regex:
+                mo = re.search(regex, text[current_idx:])
 
             if mo == None:
                 self.cursor.insertText(text[current_idx:] + '\n', text_format)

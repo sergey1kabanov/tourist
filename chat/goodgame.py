@@ -1,14 +1,11 @@
 import websocket
-import threading
 import time
-import logging
 import json
-from PyQt4 import QtGui
 
-from message import Message
+from chat_client import ChatClient
+
 
 def on_message(ws, message):
-    #m = json.loads(message[1:][0])
     j = json.loads(message)
     mtype = j['type']
 
@@ -37,7 +34,7 @@ def on_message(ws, message):
     elif mtype == 'message':
         data = j['data']
         print data
-        ws.chat_widget.print_message(Message(data['user_name'], data['text'], 'goodgame'))
+        ws.print_message(data['user_name'], data['text'])
     else:
         print j
 
@@ -48,9 +45,11 @@ def on_close(ws):
     print '### closed ###'
 
 
-class GoodgameChat(websocket.WebSocketApp):
+class GoodgameChat(websocket.WebSocketApp, ChatClient):
+    CHAT_NAME = 'goodgame'
+
     def __init__(self, settings, chat_widget):
-        self.settings = settings
+        ChatClient.__init__(self, settings, chat_widget)
         websocket.WebSocketApp.__init__(self, 'ws://goodgame.ru:8080/chat/websocket',
                               on_message = on_message,
                               on_error = on_error,
@@ -63,9 +62,4 @@ class GoodgameChat(websocket.WebSocketApp):
             self.run_forever()
             time.sleep(5)
    
-
-    def start(self):
-        t = threading.Thread(target=self.run)
-        t.setDaemon(True)
-        t.start()
 

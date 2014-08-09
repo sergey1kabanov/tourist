@@ -2,22 +2,26 @@ import json
 import httplib
 import time
 import traceback
-import threading
 
-from message import Message
+from chat_client import ChatClient
+
 
 def beautify_json(json_value):
     return json.dumps(json_value, sort_keys=True, indent=4)
+
 
 def bprint(j):
     print beautify_json(j)
 
 
-class SC2TVChat:
+class SC2TVChat(ChatClient):
+    CHAT_NAME = 'sc2tv'
+
     def __init__(self, settings, chat_widget):
+        ChatClient.__init__(self, settings, chat_widget)
         self.settings = settings
         self.url = 'chat.sc2tv.ru'
-        self.chat_widget = chat_widget
+
 
     def run(self):
         last_id = 0
@@ -42,16 +46,9 @@ class SC2TVChat:
                     if m['id'] <= last_id:
                         continue
                     print m
-                    self.chat_widget.print_message(Message(m['name'], m['message'], 'sc2tv'))
+                    self.print_message(m['name'], m['message'])
                 last_id = j[0]['id']
             except Exception:
                 print traceback.format_exc()
             finally:
                 time.sleep(5)
-
-
-    def start(self):
-        t = threading.Thread(target=self.run)
-        t.setDaemon(True)
-        t.start()
-
