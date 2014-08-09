@@ -47,6 +47,7 @@ def on_close(ws):
 
 class GoodgameChat(websocket.WebSocketApp, ChatClient):
     CHAT_NAME = 'goodgame'
+    ICON_URL = 'http://goodgame.ru/favicon.ico'
 
     def __init__(self, settings, chat_widget):
         ChatClient.__init__(self, settings, chat_widget)

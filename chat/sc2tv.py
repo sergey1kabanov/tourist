@@ -16,6 +16,7 @@ def bprint(j):
 
 class SC2TVChat(ChatClient):
     CHAT_NAME = 'sc2tv'
+    ICON_URL = 'http://sc2tv.ru/favicon.ico'
 
     def __init__(self, settings, chat_widget):
         ChatClient.__init__(self, settings, chat_widget)

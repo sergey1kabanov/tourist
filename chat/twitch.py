@@ -8,6 +8,7 @@ from chat_client import ChatClient
 
 class TwitchChat(ChatClient):
     CHAT_NAME = 'twitch'
+    ICON_URL = 'http://twitch.tv/favicon.ico'
 
     def __init__(self, settings, chat_widget):
         ChatClient.__init__(self, settings, chat_widget)
