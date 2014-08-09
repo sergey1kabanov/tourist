@@ -23,9 +23,9 @@ TEXT_FORMAT = QtGui.QTextCharFormat()
 TEXT_FORMAT.setFont(QtGui.QFont('Arial', 11))
 TEXT_FORMAT.setForeground(QtGui.QBrush(WHITE))
 
-TEXT_FORME_FORMAT = QtGui.QTextCharFormat()
-TEXT_FORME_FORMAT.setFont(QtGui.QFont('Arial', 11))
-TEXT_FORME_FORMAT.setForeground(QtGui.QBrush(YELLOW))
+TEXT_HILIGHTED_FORMAT = QtGui.QTextCharFormat()
+TEXT_HILIGHTED_FORMAT.setFont(QtGui.QFont('Arial', 11))
+TEXT_HILIGHTED_FORMAT.setForeground(QtGui.QBrush(YELLOW))
 
 class ChatWidget(QtGui.QTextEdit):
     on_print = QtCore.pyqtSignal(list)
@@ -60,21 +60,20 @@ class ChatWidget(QtGui.QTextEdit):
         self.verticalScrollBar().maximum()
 
     def print_message_text(self, text, chat):
+        self.cursor.insertText(chat + '   ', TEXT_HILIGHTED_FORMAT)
         current_idx = 0
         
         if chat == 'sc2tv':
             text = re.sub(u'\[b\]([а-я,А-Я,ё,Ё,a-z,A-Z,0-9,_,-,.,\s]+)\[/b\],', lambda mo: '%s,' % mo.group(1), text, count=1)
 
-        text_format = TEXT_FORMAT
-        if text.startswith('%s,' % self.settings[chat]['login']):
-            text_format = TEXT_FORME_FORMAT
-        else:
-            text_format = TEXT_FORMAT
+        text_format = self.get_message_text_format(text, chat)
 
         while True:
-            
             regex = None
             mo = None
+
+            print chat + ' current_idx ' + str(current_idx)
+
             if chat == 'goodgame':
                 regex = r':([a-z,A-Z,0-9]+):'
             elif chat == 'sc2tv':
@@ -85,18 +84,30 @@ class ChatWidget(QtGui.QTextEdit):
 
             if mo == None:
                 self.cursor.insertText(text[current_idx:] + '\n', text_format)
+                print chat + ' TEXT ' + text[current_idx:]
                 return
 
             code = mo.group(1)
 
+            print chat + ' ' + str(code)
+
             try:
                 image = get_image(':' + code + ':', chat)
-                self.cursor.insertText(text[current_idx:mo.start()], text_format)
+                self.cursor.insertText(text[current_idx: current_idx + mo.start()], text_format)
+                print chat + ' TEXT ' + text[current_idx: current_idx + mo.start()]
                 self.cursor.insertImage(image)
                 current_idx =  current_idx + mo.end()
             except Exception as e:
-                self.cursor.insertText(text[current_idx:(mo.end() - 1)], text_format)
+                print e
+                self.cursor.insertText(text[current_idx: (current_idx + mo.end() - 1)], text_format)
+                print chat + ' TEXT ' + text[current_idx: (current_idx + mo.end() - 1)]
                 current_idx = current_idx + (mo.end() - 1)
+
+    def get_message_text_format(self, text, chat):
+        if text.startswith('%s,' % self.settings[chat]['login']):
+            return TEXT_HILIGHTED_FORMAT
+        else:
+            return TEXT_FORMAT
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
@@ -104,17 +115,10 @@ if __name__ == '__main__':
     with open('settings.json') as f:
         settings = json.load(f)
     text_edit = ChatWidget(settings)
-    '''
-    text_edit.print_message(Message('ComixZone3', 'Hello!', 'goodgame'))
 
-    text_edit.print_message(Message('mess', 'Hello!', 'goodgame'))
-
-
-    text_edit.print_message(Message('messalina123', 'Hello!', 'goodgame'))
-
-    text_edit.print_message(Message('messalina123', 't :peka123peka:peka:', 'goodgame'))
-    '''
-    text_edit.print_message(Message('aids', u'\u0427\u0435\u0440\u0435\u043f\u0430\u0448\u043a\u0438 \u043d\u0438\u043d\u0434\u0437\u044f \u043b\u0443\u0447\u0448\u0435 \u0425\u0421 :s:lucky:', 'sc2tv'))
+    #text_edit.print_message(Message('aids', u'\u0427\u0435\u0440\u0435\u043f\u0430\u0448\u043a\u0438 \u043d\u0438\u043d\u0434\u0437\u044f \u043b\u0443\u0447\u0448\u0435 \u0425\u0421 :s:lucky:', 'sc2tv'))
+    #text_edit.print_message(Message('aids', u'\u0427\u0435\u0440\u0435\u043f\u0430\u0448\u043a\u0438 \u043d\u0438\u043d\u0434\u0437\u044f \u043b\u0443\u0447\u0448\u0435 \u0425\u0421 :s:lucky:', 'goodgame'))
+    text_edit.print_message(Message('aids', 'trololo :gg: tololo :gg: tololo', 'goodgame'))
     text_edit.show()
 
     sys.exit(app.exec_())
