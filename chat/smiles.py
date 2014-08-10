@@ -13,7 +13,15 @@ class TwitchSmiles:
     def __init__(self):
         self.smiles = {}
         self.images = {}
-        info = json.load(urllib2.urlopen(self.SMILES_URL, timeout=5))
+        
+        try:
+            with open('twitch_smiles.json', 'r') as f:
+                info = json.load(f)
+        except:
+            info = json.load(urllib2.urlopen(self.SMILES_URL, timeout=5))
+            with open('twitch_smiles.json', 'w') as f:
+                json.dump(info, f)
+
         for e in info['emoticons']:
             for i in e['images']:
                 if i['emoticon_set'] is None:
@@ -43,12 +51,19 @@ class SC2TVSmiles:
     CHAT_IMG_DIR = '/img/'
 
     def __init__(self):
-        conn = httplib.HTTPConnection('chat.sc2tv.ru')
-        conn.request('GET', '/js/smiles.js')
-        response = conn.getresponse()
-        data = response.read()
-        idx_start = data.find('[')
-        smiles = json.JSONDecoder().raw_decode(data[idx_start:])[0]
+        try:
+            with open('sc2tv_smiles.json', 'r') as f:
+                smiles = json.load(f)
+        except:
+            conn = httplib.HTTPConnection('chat.sc2tv.ru')
+            conn.request('GET', '/js/smiles.js')
+            response = conn.getresponse()
+            data = response.read()
+            idx_start = data.find('[')
+            smiles = json.JSONDecoder().raw_decode(data[idx_start:])[0]
+            with open('sc2tv_smiles.json', 'w') as f:
+                json.dump(smiles, f)
+
         self.smiles = {}
         for s in smiles:
             self.smiles[s['code']] = s
@@ -217,4 +232,4 @@ if __name__ == '__main__':
 
     sys.exit(app.exec_())
     '''
-    print twitch_smiles.get_smile('\\:-?D')
+    print twitch_smiles.get_smile('\\:-?\\)')
