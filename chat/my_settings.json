@@ -1,0 +1,18 @@
+{
+    "goodgame":
+    {
+        "login": "Happa_",
+        "channel_id": 1999
+    },
+    "sc2tv":
+    {
+        "login": "Happa",
+        "channel_id": 199297
+    },
+    "twitch":
+    {
+        "login": "sergey1kabanov",
+        "channel": "sergey1kabanov",
+        "authtoken": "oauth:8fr92663lde11jttofwi85ibvtnoyy1"
+    }
+}
