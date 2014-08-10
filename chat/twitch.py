@@ -55,7 +55,7 @@ class TwitchChat(ChatClient):
     def on_message(self, connection, event):
         login = event.source.split('!')[0]
         text = event.arguments[0]
-        print '%s: %s' % (login, text)
+        #print '%s: %s' % (login, text)
         self.print_message(login, text)
 
 
