@@ -18,7 +18,7 @@ class TwitchSmiles:
             with open('twitch_smiles.json', 'r') as f:
                 info = json.load(f)
         except:
-            info = json.load(urllib2.urlopen(self.SMILES_URL, timeout=5))
+            info = json.load(urllib2.urlopen(self.SMILES_URL, timeout=20))
             with open('twitch_smiles.json', 'w') as f:
                 json.dump(info, f)
 
