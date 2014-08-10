@@ -1,11 +1,42 @@
 import tinycss
 import re
-import sys
 import httplib
+import urllib2
 import json
 
 from PyQt4 import QtGui, QtCore
-from StringIO import StringIO
+
+
+class TwitchSmiles:
+    SMILES_URL = 'http://api.twitch.tv/kraken/chat/emoticons'
+
+    def __init__(self):
+        self.smiles = {}
+        self.images = {}
+        info = json.load(urllib2.urlopen(self.SMILES_URL, timeout=5))
+        for e in info['emoticons']:
+            for i in e['images']:
+                if i['emoticon_set'] is None:
+                    self.smiles[e['regex']] = i
+                    break
+
+    def get_smile(self, code):
+        if not code in self.smiles:
+            raise Exception('Smile %s not found' % code)
+        image = self.images.get(code, None)
+        if not image:
+            data = urllib2.urlopen(self.smiles[code]['url'], timeout=5).read()
+            image = QtGui.QImage()
+            image.loadFromData(data)
+            self.images[code] = image
+
+        return image
+
+
+    def get_all_codes(self):
+        return self.smiles.keys()
+
+
 
 
 class SC2TVSmiles:
@@ -151,14 +182,20 @@ class SmileStorage:
 
 goodgame_smiles = SmileStorage()
 sc2tv_smiles = SC2TVSmiles()
+twitch_smiles = TwitchSmiles()
 
 def get_image(smile_code, chat):
     if chat == 'goodgame':
         return goodgame_smiles.get_smile(smile_code)
     elif chat == 'sc2tv':
         return sc2tv_smiles.get_smile(smile_code)
+    elif chat == 'twitch':
+        return twitch_smiles.get_smile(smile_code)
     else:
         raise Exception('Chat %s not supported' % chat)
+
+def get_twitch_codes():
+    return twitch_smiles.get_all_codes()
 
 
 if __name__ == '__main__':
@@ -180,5 +217,4 @@ if __name__ == '__main__':
 
     sys.exit(app.exec_())
     '''
-    print SC2TVSmiles().get_smile(':peka:')
-    
+    print twitch_smiles.get_smile('\\:-?D')
