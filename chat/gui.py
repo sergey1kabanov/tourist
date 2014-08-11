@@ -100,6 +100,15 @@ class ChatWidget(QtGui.QTextEdit):
             self.print_message_text_twitch(text, chat)
             return
 
+        special_chars = {
+            '&quot;': '"', 
+            '&amp;': '&',
+            '&lt;': '<',
+            '&gt;': '>'
+        }
+        for code, char in special_chars.items():
+            text = text.replace(code, char)
+
         current_idx = 0
         
         if chat == 'sc2tv':
