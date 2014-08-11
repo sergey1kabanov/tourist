@@ -8,6 +8,7 @@ import re
 import sys
 import json
 import urllib2
+import webbrowser
 
 MAX_LOGIN_SIZE = 15
 
@@ -28,12 +29,14 @@ TEXT_HILIGHTED_FORMAT = QtGui.QTextCharFormat()
 TEXT_HILIGHTED_FORMAT.setFont(QtGui.QFont('Arial', 11))
 TEXT_HILIGHTED_FORMAT.setForeground(QtGui.QBrush(YELLOW))
 
-class ChatWidget(QtGui.QTextEdit):
+class ChatWidget(QtGui.QTextBrowser):
     on_print = QtCore.pyqtSignal(list)
 
     def __init__(self, settings, parent=None):
         self.settings = settings
-        QtGui.QTextEdit.__init__(self, parent)
+        QtGui.QTextBrowser.__init__(self, parent)
+        self.setOpenLinks(False)
+        self.anchorClicked.connect(self.open_url)
         self.on_print.connect(self.do_print)
         self.setWindowTitle("CHAT")
         self.resize(400, 500)
@@ -43,6 +46,9 @@ class ChatWidget(QtGui.QTextEdit):
         self.setPalette(palette)
         self.cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
         self.smile_storage = SmileStorage(settings)
+
+    def open_url(self, url):
+        QtGui.QDesktopServices.openUrl(url)
 
     def adjust_login_size(self, login):
         login_size = len(login)
@@ -61,6 +67,7 @@ class ChatWidget(QtGui.QTextEdit):
         if message.icon:
             self.cursor.insertImage(message.icon)
         self.cursor.insertText(self.adjust_login_size(message.login), LOGIN_FORMAT)
+        #self.cursor.insertHtml('<a style="color: #73adff; font-size: 18px; font-family: Arial;" href="#"><span>' + self.adjust_login_size(message.login) + '</span></a>')
         self.print_message_text(message.text, message.chat)
         self.moveCursor(QtGui.QTextCursor.End)
         self.verticalScrollBar().maximum()
@@ -81,16 +88,36 @@ class ChatWidget(QtGui.QTextEdit):
                 if mo is None:
                     break
 
-                smile_indexes.append((current_idx + mo.start(), current_idx + mo.end(), regex))
+                smile_indexes.append((current_idx + mo.start(), current_idx + mo.end(), regex, 'SMILE'))
                 current_idx =  current_idx + mo.end()
+
+        url_regexp = ur'(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?\xab\xbb\u201c\u201d\u2018\u2019]))'
+        current_idx = 0
+        while True:
+            mo = None
+
+            if url_regexp:
+                mo = re.search(url_regexp, text[current_idx:])
+
+            if mo is None:
+                break
+
+            smile_indexes.append((current_idx + mo.start(), current_idx + mo.end(), mo.string[mo.start(): mo.end()], 'URL'))
+            current_idx =  current_idx + mo.end()
+
 
         smile_indexes = sorted(smile_indexes, cmp=lambda p1, p2: cmp(p1[0], p2[0]))
 
         current_idx = 0
         for smile_index in smile_indexes:
-            self.cursor.insertText(text[current_idx: smile_index[0]], text_format)
-            self.cursor.insertImage(self.smile_storage.get_image(smile_index[2], chat))
-            current_idx = smile_index[1]
+            if smile_index[3] == 'SMILE':
+                self.cursor.insertText(text[current_idx: smile_index[0]], text_format)
+                self.cursor.insertImage(self.smile_storage.get_image(smile_index[2], chat))
+                current_idx = smile_index[1]
+            elif smile_index[3] == 'URL':
+                self.cursor.insertText(text[current_idx: smile_index[0]], text_format)
+                self.cursor.insertHtml('<a style="color: #73adff; font-size: 18px; font-family: Arial;" href="' + smile_index[2] + '">' + smile_index[2] + "</a>")
+                current_idx = smile_index[1]
         self.cursor.insertText(text[current_idx:] + '\n', text_format)
         return
 
@@ -112,7 +139,7 @@ class ChatWidget(QtGui.QTextEdit):
         current_idx = 0
         
         if chat == 'sc2tv':
-            text = re.sub(u'\[b\]([а-я,А-Я,ё,Ё,a-z,A-Z,0-9,_,-,.,\s]+)\[/b\],', lambda mo: '%s,' % mo.group(1), text, count=1)
+            text = re.sub(u'\[b\]([а-я,А-Я,ё,Ё,a-z,A-Z,0-9,_,-,.,\s]+?)\[/b\],', lambda mo: '%s,' % mo.group(1), text, count=1)
 
         text_format = self.get_message_text_format(text, chat)
 
@@ -121,9 +148,9 @@ class ChatWidget(QtGui.QTextEdit):
             mo = None
 
             if chat == 'goodgame':
-                regex = r':([a-z,A-Z,0-9]+):'
+                regex = r':([a-z,A-Z,0-9]+?):|<a.*?href="(.*?)">.*?</a>'
             elif chat == 'sc2tv':
-                regex = r':s:([a-z,A-Z,0-9]+):'
+                regex = r':s:([a-z,A-Z,0-9]+?):|\[url\](.*?)\[/url\]'
 
             if regex:
                 mo = re.search(regex, text[current_idx:])
@@ -132,16 +159,22 @@ class ChatWidget(QtGui.QTextEdit):
                 self.cursor.insertText(text[current_idx:] + '\n', text_format)
                 return
 
-            code = mo.group(1)
+            if mo.group(1) is not None:
+                code = mo.group(1)
+                try:
+                    image = self.smile_storage.get_image(':' + code + ':', chat)
+                    self.cursor.insertText(text[current_idx: current_idx + mo.start()], text_format)
+                    self.cursor.insertImage(image)
+                    current_idx = current_idx + mo.end()
+                except Exception as e:
+                    self.cursor.insertText(text[current_idx: (current_idx + mo.end() - 1)], text_format)
+                    current_idx = current_idx + (mo.end() - 1)
 
-            try:
-                image = self.smile_storage.get_image(':' + code + ':', chat)
+            elif mo.group(2) is not None:
+                code = mo.group(2)
                 self.cursor.insertText(text[current_idx: current_idx + mo.start()], text_format)
-                self.cursor.insertImage(image)
-                current_idx =  current_idx + mo.end()
-            except Exception as e:
-                self.cursor.insertText(text[current_idx: (current_idx + mo.end() - 1)], text_format)
-                current_idx = current_idx + (mo.end() - 1)
+                self.cursor.insertHtml('<a style="color: #73adff; font-size: 18px; font-family: Arial;" href="' + code + '">' + code + "</a>")
+                current_idx = current_idx + mo.end()
 
     def get_message_text_format(self, text, chat):
         if text.startswith('%s,' % self.settings[chat]['login']):
@@ -176,8 +209,12 @@ if __name__ == '__main__':
     #text_edit.print_message(Message('aids12345678901234567890', 'trololo :gg: tololo :gg: tololo', 'goodgame', gg_icon))
     #text_edit.print_message(Message('thegodis', 'trololo :gg:', 'goodgame', gg_icon))
     #text_edit.print_message(Message('Kapibara', 'trololo :gg:', 'goodgame', gg_icon))
-    #text_edit.print_message(Message('thegodis', 'trololo :D:D ^):):-) ololo:))): ):) 0', 'twitch', tw_icon))
-    text_edit.print_message(Message('thegodis', u'\u041f\u0440\u0438\u0432\u0435\u0442 \u0425\u0430\u043f\u043f\u0430 \u0434\u0430\u0432\u043d\u043e \u0442\u0435\u0435\u0431\u044f \u043d\u0435 \u0431\u044b\u043b\u043e \u0441\u043a\u0443\u0447\u0430\u043b) :-D', 'twitch', tw_icon))
+
+    text_edit.print_message(Message('thegodis', 'goodgame.ru www.goodgame.ru', 'twitch', tw_icon))
+    text_edit.print_message(Message('thegodis', 'http://goodgame.ru', 'twitch', tw_icon))
+    text_edit.print_message(Message('gg', 'a:gg:<a href="http://goodg:gg:ame.ru">http://goodgame.ru</a>  a:gg:', 'goodgame', gg_icon))
+    text_edit.print_message(Message('afafsfagag', ':s:peka:[url]http://sc2tv.ru[/url] http://sc2tv.ru', 'sc2tv', sc_icon))
+
     #text_edit.print_message(Message('aids', 'trololo :gg:', 'goodgame', sc_icon))
     text_edit.show()
 
