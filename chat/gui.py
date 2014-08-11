@@ -45,6 +45,9 @@ class ChatWidget(QtGui.QTextBrowser):
         palette.setColor(QtGui.QPalette.Base, DARK_BLUE)
         self.setPalette(palette)
         self.cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
+        blockFormat = self.cursor.blockFormat()
+        blockFormat.setTopMargin(10)
+        self.cursor.setBlockFormat(blockFormat)
         self.smile_storage = SmileStorage(settings)
 
     def open_url(self, url):
@@ -67,7 +70,7 @@ class ChatWidget(QtGui.QTextBrowser):
         if message.icon:
             self.cursor.insertImage(message.icon)
         self.cursor.insertText(self.adjust_login_size(message.login), LOGIN_FORMAT)
-        #self.cursor.insertHtml('<a style="color: #73adff; font-size: 18px; font-family: Arial;" href="#"><span>' + self.adjust_login_size(message.login) + '</span></a>')
+        #self.cursor.insertHtml('')
         self.print_message_text(message.text, message.chat)
         self.moveCursor(QtGui.QTextCursor.End)
         self.verticalScrollBar().maximum()
