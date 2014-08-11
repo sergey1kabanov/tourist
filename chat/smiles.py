@@ -10,7 +10,8 @@ from PyQt4 import QtGui, QtCore
 class TwitchSmiles:
     SMILES_URL = 'http://api.twitch.tv/kraken/chat/emoticons'
 
-    def __init__(self):
+    def __init__(self, settings):
+        self.settings = settings
         self.smiles = {}
         self.images = {}
         
@@ -24,7 +25,7 @@ class TwitchSmiles:
 
         for e in info['emoticons']:
             for i in e['images']:
-                if i['emoticon_set'] is None:
+                if i['emoticon_set'] in self.settings['smile_sets']:
                     self.smiles[e['regex']] = i
                     break
 
@@ -50,7 +51,7 @@ class TwitchSmiles:
 class SC2TVSmiles:
     CHAT_IMG_DIR = '/img/'
 
-    def __init__(self):
+    def __init__(self, settings):
         try:
             with open('sc2tv_smiles.json', 'r') as f:
                 smiles = json.load(f)
@@ -165,8 +166,8 @@ def create_sub_image(image, rect):
     '''
     return image.copy(rect)
 
-class SmileStorage:
-    def __init__(self):
+class GoodgameSmiles:
+    def __init__(self, settings):
         conn = httplib.HTTPConnection('goodgame.ru')
         conn.request('GET', '/css/compiled/chat.css')
         response = conn.getresponse()
@@ -195,22 +196,23 @@ class SmileStorage:
             self.smiles[smile_code] = smile
         return smile
 
-goodgame_smiles = SmileStorage()
-sc2tv_smiles = SC2TVSmiles()
-twitch_smiles = TwitchSmiles()
 
-def get_image(smile_code, chat):
-    if chat == 'goodgame':
-        return goodgame_smiles.get_smile(smile_code)
-    elif chat == 'sc2tv':
-        return sc2tv_smiles.get_smile(smile_code)
-    elif chat == 'twitch':
-        return twitch_smiles.get_smile(smile_code)
-    else:
-        raise Exception('Chat %s not supported' % chat)
+class SmileStorage:
+    def __init__(self, settings):
+        self.chats = {
+            'goodgame': GoodgameSmiles(settings['goodgame']),
+            'sc2tv': SC2TVSmiles(settings['sc2tv']),
+            'twitch': TwitchSmiles(settings['twitch'])
+        }
 
-def get_twitch_codes():
-    return twitch_smiles.get_all_codes()
+    def get_image(self, smile_code, chat):
+        if not chat in self.chats:
+            raise Exception('Chat %s not supported' % chat)
+
+        return self.chats[chat].get_smile(smile_code)
+
+    def get_twitch_codes(self):
+        return self.chats['twitch'].get_all_codes()
 
 
 if __name__ == '__main__':

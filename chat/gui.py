@@ -3,8 +3,7 @@
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from message import Message
-from smiles import get_image
-from smiles import get_twitch_codes
+from smiles import SmileStorage
 import re
 import sys
 import json
@@ -43,6 +42,7 @@ class ChatWidget(QtGui.QTextEdit):
         palette.setColor(QtGui.QPalette.Base, DARK_BLUE)
         self.setPalette(palette)
         self.cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
+        self.smile_storage = SmileStorage(settings)
 
     def adjust_login_size(self, login):
         login_size = len(login)
@@ -67,7 +67,7 @@ class ChatWidget(QtGui.QTextEdit):
 
     def print_message_text_twitch(self, text, chat):
         text_format = self.get_message_text_format(text, chat)
-        twitch_codes = get_twitch_codes()
+        twitch_codes = self.smile_storage.get_twitch_codes()
 
         smile_indexes = []
         for regex in twitch_codes:
@@ -89,7 +89,7 @@ class ChatWidget(QtGui.QTextEdit):
         current_idx = 0
         for smile_index in smile_indexes:
             self.cursor.insertText(text[current_idx: smile_index[0]], text_format)
-            self.cursor.insertImage(get_image(smile_index[2], chat))
+            self.cursor.insertImage(self.smile_storage.get_image(smile_index[2], chat))
             current_idx = smile_index[1]
         self.cursor.insertText(text[current_idx:] + '\n', text_format)
         return
@@ -126,7 +126,7 @@ class ChatWidget(QtGui.QTextEdit):
             code = mo.group(1)
 
             try:
-                image = get_image(':' + code + ':', chat)
+                image = self.smile_storage.get_image(':' + code + ':', chat)
                 self.cursor.insertText(text[current_idx: current_idx + mo.start()], text_format)
                 self.cursor.insertImage(image)
                 current_idx =  current_idx + mo.end()
@@ -167,8 +167,8 @@ if __name__ == '__main__':
     #text_edit.print_message(Message('aids12345678901234567890', 'trololo :gg: tololo :gg: tololo', 'goodgame', gg_icon))
     #text_edit.print_message(Message('thegodis', 'trololo :gg:', 'goodgame', gg_icon))
     #text_edit.print_message(Message('Kapibara', 'trololo :gg:', 'goodgame', gg_icon))
-    text_edit.print_message(Message('thegodis', 'trololo :D:D ^):):-) ololo:))): ):) 0', 'twitch', tw_icon))
-    text_edit.print_message(Message('thegodis', ':)):P', 'twitch', tw_icon))
+    #text_edit.print_message(Message('thegodis', 'trololo :D:D ^):):-) ololo:))): ):) 0', 'twitch', tw_icon))
+    text_edit.print_message(Message('thegodis', u'\u041f\u0440\u0438\u0432\u0435\u0442 \u0425\u0430\u043f\u043f\u0430 \u0434\u0430\u0432\u043d\u043e \u0442\u0435\u0435\u0431\u044f \u043d\u0435 \u0431\u044b\u043b\u043e \u0441\u043a\u0443\u0447\u0430\u043b) :-D', 'twitch', tw_icon))
     #text_edit.print_message(Message('aids', 'trololo :gg:', 'goodgame', sc_icon))
     text_edit.show()
 

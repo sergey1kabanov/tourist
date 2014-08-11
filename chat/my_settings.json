@@ -13,6 +13,7 @@
     {
         "login": "sergey1kabanov",
         "channel": "sergey1kabanov",
-        "authtoken": "oauth:8fr92663lde11jttofwi85ibvtnoyy1"
+        "authtoken": "oauth:8fr92663lde11jttofwi85ibvtnoyy1",
+        "smile_sets": [null, 5322]
     }
 }
