@@ -1,19 +1,28 @@
 {
-    "goodgame":
+    "auth":
     {
-        "login": "Happa_",
-        "channel_id": 1999
+        "goodgame":
+        {
+            "login": "Happa_",
+            "channel_id": 2059
+        },
+        "sc2tv":
+        {
+            "login": "Happa",
+            "channel_id": 160487
+        },
+        "twitch":
+        {
+            "login": "sergey1kabanov",
+            "channel": "happasc2",
+            "authtoken": "oauth:8fr92663lde11jttofwi85ibvtnoyy1",
+            "smile_sets": [null, 5322]
+        }
     },
-    "sc2tv":
+    
+    "view":
     {
-        "login": "Happa",
-        "channel_id": 199297
-    },
-    "twitch":
-    {
-        "login": "sergey1kabanov",
-        "channel": "happasc2",
-        "authtoken": "oauth:8fr92663lde11jttofwi85ibvtnoyy1",
-        "smile_sets": [null, 5322]
+        "bg_color":  [40, 40, 65]
     }
 }
+

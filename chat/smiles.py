@@ -200,9 +200,9 @@ class GoodgameSmiles:
 class SmileStorage:
     def __init__(self, settings):
         self.chats = {
-            'goodgame': GoodgameSmiles(settings['goodgame']),
-            'sc2tv': SC2TVSmiles(settings['sc2tv']),
-            'twitch': TwitchSmiles(settings['twitch'])
+            'goodgame': GoodgameSmiles(settings.auth['goodgame']),
+            'sc2tv': SC2TVSmiles(settings.auth['sc2tv']),
+            'twitch': TwitchSmiles(settings.auth['twitch'])
         }
 
     def get_image(self, smile_code, chat):

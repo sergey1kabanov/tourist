@@ -6,6 +6,7 @@ import json
 import sys
 from PyQt4 import QtGui
 
+from settings import Settings
 from gui import ChatWidget
 from sc2tv import SC2TVChat
 from goodgame import GoodgameChat
@@ -21,17 +22,16 @@ if __name__ == '__main__':
         settings_file = sys.argv[1]
     else:
         settings_file = 'settings.json'
-    with open(settings_file, 'r') as f:
-        settings = json.load(f)
+    settings = Settings(settings_file)
 
     app = QtGui.QApplication(sys.argv)
     w = ChatWidget(settings)
     w.show()
  
     chats = [
-                GoodgameChat(settings['goodgame'], w),
-                SC2TVChat(settings['sc2tv'], w),
-                TwitchChat(settings['twitch'], w)
+                GoodgameChat(settings.auth['goodgame'], w),
+                SC2TVChat(settings.auth['sc2tv'], w),
+                TwitchChat(settings.auth['twitch'], w)
     ]
     map(lambda chat: chat.start(), chats)
 

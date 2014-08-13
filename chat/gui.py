@@ -2,6 +2,7 @@
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
+from settings import Settings
 from message import Message
 from smiles import SmileStorage
 import re
@@ -12,7 +13,7 @@ import webbrowser
 
 MAX_LOGIN_SIZE = 15
 
-DARK_BLUE = QtGui.QColor(24, 24, 39)
+DARK_BLUE = (24, 24, 39)
 LIGHT_BLUE = QtGui.QColor(115, 173, 255)
 WHITE = QtGui.QColor(174, 193, 209)
 YELLOW = QtGui.QColor(0xf1, 0xbd, 0x13) 
@@ -29,6 +30,9 @@ TEXT_HILIGHTED_FORMAT = QtGui.QTextCharFormat()
 TEXT_HILIGHTED_FORMAT.setFont(QtGui.QFont('Arial', 11))
 TEXT_HILIGHTED_FORMAT.setForeground(QtGui.QBrush(YELLOW))
 
+def create_color(rgb):
+    return QtGui.QColor(rgb[0], rgb[1], rgb[2])
+
 class ChatWidget(QtGui.QTextBrowser):
     on_print = QtCore.pyqtSignal(list)
 
@@ -42,7 +46,8 @@ class ChatWidget(QtGui.QTextBrowser):
         self.resize(400, 500)
         self.setReadOnly(True)
         palette = self.palette()
-        palette.setColor(QtGui.QPalette.Base, DARK_BLUE)
+        bg_color = create_color(self.settings.view.get('bg_color', DARK_BLUE))
+        palette.setColor(QtGui.QPalette.Base, bg_color)
         self.setPalette(palette)
         self.cursor = self.cursorForPosition(QtCore.QPoint(0, 0))
         blockFormat = self.cursor.blockFormat()
@@ -119,7 +124,7 @@ class ChatWidget(QtGui.QTextBrowser):
                 current_idx = smile_index[1]
             elif smile_index[3] == 'URL':
                 self.cursor.insertText(text[current_idx: smile_index[0]], text_format)
-                self.cursor.insertHtml('<a style="color: #73adff; font-size: 18px; font-family: Arial;" href="' + smile_index[2] + '">' + smile_index[2] + "</a>")
+                self.cursor.insertHtml('<a style="color: #73adff; font-size: 14px; font-family: Arial;" href="' + smile_index[2] + '">' + smile_index[2] + "</a>")
                 current_idx = smile_index[1]
         self.cursor.insertText(text[current_idx:] + '\n', text_format)
         return
@@ -176,11 +181,11 @@ class ChatWidget(QtGui.QTextBrowser):
             elif mo.group(2) is not None:
                 code = mo.group(2)
                 self.cursor.insertText(text[current_idx: current_idx + mo.start()], text_format)
-                self.cursor.insertHtml('<a style="color: #73adff; font-size: 18px; font-family: Arial;" href="' + code + '">' + code + "</a>")
+                self.cursor.insertHtml('<a style="color: #73adff; font-size: 14px; font-family: Arial;" href="' + code + '">' + code + "</a>")
                 current_idx = current_idx + mo.end()
 
     def get_message_text_format(self, text, chat):
-        if text.startswith('%s,' % self.settings[chat]['login']):
+        if text.startswith('%s,' % self.settings.auth[chat]['login']):
             return TEXT_HILIGHTED_FORMAT
         else:
             return TEXT_FORMAT
@@ -188,8 +193,7 @@ class ChatWidget(QtGui.QTextBrowser):
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
 
-    with open('settings.json') as f:
-        settings = json.load(f)
+    settings = Settings('settings.json')
     text_edit = ChatWidget(settings)
 
     GG_ICON_URL = 'http://goodgame.ru/favicon.ico'
